@@ -9,8 +9,6 @@ router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, 
   try {
     const evt = await verifyWebhook(req)
 
-    // Do something with payload
-    // For this guide, log payload to console
     const { id } = evt.data
     const eventType = evt.type
 
@@ -50,25 +48,21 @@ router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, 
   }
 })
 
-router.get("/user", async (req, res) => {
+router.get("/users", async (req, res) => {
   try {
-    const { email } = req.query;
+    // Sare users fetch karo
+    const users = await User.find();
 
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
+    // Sare users bhejo
     res.json({
       success: true,
-      data: user,
+      count: users.length,
+      data: users,
     });
+
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       success: false,
       message: "Server error",

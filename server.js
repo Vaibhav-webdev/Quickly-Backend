@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
-dotenv.config(); // VERY IMPORTANT — upar rakho, sabse pehle
+dotenv.config();
 app.use(express.json());
 
 // connect database

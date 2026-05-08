@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
     clerkId: {
       type: String,
       required: true,
-      unique: true,  // ← duplicate user kabhi nahi banega
+      unique: true,
       index: true,
     },
     email: {
@@ -24,14 +24,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    notification : {
-      type: Boolean,
-      default: true
-    },
-    sound: {
-      type: Boolean,
-      default: true
-    }
   },
   { timestamps: true } // ← createdAt, updatedAt auto mil jayega
 );

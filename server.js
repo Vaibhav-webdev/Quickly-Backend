@@ -26,23 +26,29 @@ app.use(express.json());
 connectDB();
 
 // normal routes
+app.get('/', (req, res) => {
+  res.send("<h2>Hello, Developer!</h2>")
+})
 app.use("/api", userRoutes);
 
 // socket connection
 io.on("connection", (socket) => {
+
   console.log("User Connected:", socket.id);
 
   // receive message
   socket.on("message", (data) => {
-    console.log("Message:", data);
+    console.log("Message Received:", data);
 
     // send to all users
-    io.emit("message", data);
+    socket.broadcast.emit("message", data);
   });
 
+  // disconnect
   socket.on("disconnect", () => {
-    console.log("User Disconnected");
+    console.log("User Disconnected:", socket.id);
   });
+
 });
 
 // IMPORTANT

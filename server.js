@@ -48,6 +48,11 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("stopTyping", data);
   });
 
+  socket.on("send_image", async (data) => {
+    socket.broadcast.emit("send_image", data);
+
+  });
+
   // disconnect
   socket.on("disconnect", () => {
     console.log("User Disconnected:", socket.id);

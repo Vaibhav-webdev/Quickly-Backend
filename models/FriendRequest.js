@@ -1,6 +1,6 @@
 // models/FriendRequest.js
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const friendRequestSchema = new mongoose.Schema({
   sender: {
@@ -20,7 +20,5 @@ const friendRequestSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model(
-  "FriendRequest",
-  friendRequestSchema
-);
+// ES6 Default Export
+export default mongoose.model("FriendRequest", friendRequestSchema);

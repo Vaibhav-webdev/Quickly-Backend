@@ -2,7 +2,7 @@ import express from "express";
 import User from "../models/User.js"
 import { clerkClient } from "@clerk/express";
 import { verifyWebhook } from "@clerk/express/webhooks";
-import FriendRequest from "../models/FriendRequest.js"
+import FriendRequest from "../models/FriendRequest.js";
 
 const router = express.Router();
 

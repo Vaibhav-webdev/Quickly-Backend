@@ -36,9 +36,11 @@ router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, 
 
       await User.findOneAndUpdate(
         { clerkId: data.id },
-        { image: data.image_url,
+        {
+          image: data.image_url,
           firstName: data.first_name,
-          lastName: data.last_name }
+          lastName: data.last_name
+        }
       );
     }
 
@@ -49,13 +51,32 @@ router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, 
   }
 })
 
-router.get("/friends/:userId", async (req, res) => {
+router.get("/friends/:email", async (req, res) => {
+  try {
+    const user = await User.findOne({
+      email: req.params.email,
+    }).populate("friends");
 
-  const user = await User.findById(
-    req.params.userId
-  ).populate("friends");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-  res.json(user.friends);
+    res.json(user.friends);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+router.get("/friend-requests/:userId", async (req, res) => {
+  const requests = await FriendRequest.find({
+    receiver: req.params.userId,
+    status: "pending",
+  }).populate("sender");
+  res.json(requests);
 });
 
 router.get("/users", async (req, res) => {

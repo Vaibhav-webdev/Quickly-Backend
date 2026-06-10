@@ -2,6 +2,7 @@ import express from "express";
 import User from "../models/User.js"
 import { clerkClient } from "@clerk/express";
 import { verifyWebhook } from "@clerk/express/webhooks";
+import FriendRequest from "../models/FriendRequest.js"
 
 const router = express.Router();
 
@@ -48,6 +49,15 @@ router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, 
   }
 })
 
+router.get("/friends/:userId", async (req, res) => {
+
+  const user = await User.findById(
+    req.params.userId
+  ).populate("friends");
+
+  res.json(user.friends);
+});
+
 router.get("/users", async (req, res) => {
   try {
     // Sare users fetch karo
@@ -70,4 +80,79 @@ router.get("/users", async (req, res) => {
   }
 });
 
+router.post("/send-request", async (req, res) => {
+
+  const { senderId, receiverId } = req.body;
+
+  const already = await FriendRequest.findOne({
+    sender: senderId,
+    receiver: receiverId,
+  });
+
+  if (already) {
+    return res.json({
+      message: "Already sent",
+    });
+  }
+
+  const request = await FriendRequest.create({
+    sender: senderId,
+    receiver: receiverId,
+  });
+
+  res.json(request);
+});
+
+router.post("/accept-request", async (req, res) => {
+
+  const { requestId } = req.body;
+
+  const request = await FriendRequest.findById(
+    requestId
+  );
+
+  request.status = "accepted";
+
+  await request.save();
+
+  // Add friend to sender
+  await User.findByIdAndUpdate(
+    request.sender,
+    {
+      $push: {
+        friends: request.receiver,
+      },
+    }
+  );
+
+  // Add friend to receiver
+  await User.findByIdAndUpdate(
+    request.receiver,
+    {
+      $push: {
+        friends: request.sender,
+      },
+    }
+  );
+
+  res.json({
+    message: "Friend added",
+  });
+});
+
+router.post("/reject-request", async (req, res) => {
+
+  const { requestId } = req.body;
+
+  await FriendRequest.findByIdAndUpdate(
+    requestId,
+    {
+      status: "rejected",
+    }
+  );
+
+  res.json({
+    message: "Rejected",
+  });
+});
 export default router;

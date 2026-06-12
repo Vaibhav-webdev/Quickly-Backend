@@ -72,11 +72,17 @@ router.get("/friends/:email", async (req, res) => {
 });
 
 router.get("/friend-requests/:email", async (req, res) => {
-  const requests = await FriendRequest.find({
-    receiver: req.params.email,
-    status: "pending",
-  }).populate("sender");
-  res.json(requests);
+  try {
+    const requests = await FriendRequest.find({
+      receiver: req.params.email,
+      status: "pending",
+    });
+
+    res.json(requests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 router.get("/users", async (req, res) => {

@@ -132,19 +132,19 @@ router.post("/send-request", async (req, res) => {
 
 router.post("/accept-request", async (req, res) => {
 
-  const { requestId } = req.body;
+  const { email } = req.body;
 
-  const request = await FriendRequest.findById(
-    requestId
-  );
+  const request = await FriendRequest.findOne({
+    receiver: email,
+  });
 
   request.status = "accepted";
 
   await request.save();
 
   // Add friend to sender
-  await User.findByIdAndUpdate(
-    request.sender,
+  await User.findOneAndUpdate(
+    { email: request.sender },
     {
       $push: {
         friends: request.receiver,
@@ -152,9 +152,8 @@ router.post("/accept-request", async (req, res) => {
     }
   );
 
-  // Add friend to receiver
-  await User.findByIdAndUpdate(
-    request.receiver,
+  await User.findOneAndUpdate(
+    { email: request.receiver },
     {
       $push: {
         friends: request.sender,

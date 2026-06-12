@@ -71,9 +71,9 @@ router.get("/friends/:email", async (req, res) => {
   }
 });
 
-router.get("/friend-requests/:userId", async (req, res) => {
+router.get("/friend-requests/:email", async (req, res) => {
   const requests = await FriendRequest.find({
-    receiver: req.params.userId,
+    receiver: req.params.email,
     status: "pending",
   }).populate("sender");
   res.json(requests);

@@ -198,4 +198,25 @@ router.post("/reject-request", async (req, res) => {
     message: "Rejected",
   });
 });
+
+router.post("/users/bulk", async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    const users = await User.find({
+      _id: { $in: ids }
+    });
+
+    res.json({
+      success: true,
+      users
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 export default router;

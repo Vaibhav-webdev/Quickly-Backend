@@ -131,40 +131,56 @@ router.post("/send-request", async (req, res) => {
 });
 
 router.post("/accept-request", async (req, res) => {
+  try {
+    const { requestId } = req.body;
 
-  const { requestId } = req.body;
+    const request = await FriendRequest.findById(requestId);
 
-  const request = await FriendRequest.findById(
-    requestId
-  );
-
-  request.status = "accepted";
-
-  await request.save();
-
-  // Add friend to sender
-  await User.findByIdAndUpdate(
-    request.sender,
-    {
-      $push: {
-        friends: request.receiver,
-      },
+    if (!request) {
+      return res.status(404).json({
+        message: "Friend request not found",
+      });
     }
-  );
 
-  // Add friend to receiver
-  await User.findByIdAndUpdate(
-    request.receiver,
-    {
-      $push: {
-        friends: request.sender,
-      },
+    request.status = "accepted";
+    await request.save();
+
+    const senderUser = await User.findOne({
+      email: request.sender,
+    });
+
+    const receiverUser = await User.findOne({
+      email: request.receiver,
+    });
+
+    if (!senderUser || !receiverUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
-  );
 
-  res.json({
-    message: "Friend added",
-  });
+    await User.findByIdAndUpdate(senderUser._id, {
+      $addToSet: {
+        friends: receiverUser._id,
+      },
+    });
+
+    await User.findByIdAndUpdate(receiverUser._id, {
+      $addToSet: {
+        friends: senderUser._id,
+      },
+    });
+
+    res.json({
+      message: "Friend added",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 });
 
 router.post("/reject-request", async (req, res) => {

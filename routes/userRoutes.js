@@ -58,7 +58,6 @@ router.get("/friends/:email", async (req, res) => {
     }).populate({
       path: "friends.user",
     })
-    .lean();
 
     if (!user) {
       return res.status(404).json({

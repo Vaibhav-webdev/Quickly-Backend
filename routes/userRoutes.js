@@ -57,6 +57,7 @@ router.get("/friends/:email", async (req, res) => {
       email: req.params.email,
     }).populate({
       path: "friends.user",
+      select: "firstName lastName email image"
     });
 
     if (!user) {

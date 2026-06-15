@@ -56,8 +56,8 @@ router.get("/friends/:email", async (req, res) => {
     const user = await User.findOne({
       email: req.params.email,
     }).populate({
-    path: "friends.user",
-  });
+      path: "friends.user",
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -161,15 +161,17 @@ router.post("/accept-request", async (req, res) => {
       });
     }
 
+    const roomId = `room_${[senderUser._id.toString(), receiverUser._id.toString()].sort().join("_")}`;
+
     await User.findByIdAndUpdate(senderUser._id, {
-      $addToSet: {
-        friends: receiverUser._id,
+      $push: {
+        friends: { user: receiverUser._id, roomId: roomId },
       },
     });
 
     await User.findByIdAndUpdate(receiverUser._id, {
-      $addToSet: {
-        friends: senderUser._id,
+      $push: {
+        friends: { user: senderUser._id, roomId: roomId },
       },
     });
 

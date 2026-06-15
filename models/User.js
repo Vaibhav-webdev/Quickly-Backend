@@ -24,18 +24,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    friends: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        roomId: {
-          type: String,
-          required: true,
-        },
-      },
+    friends: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     ],
   },
   { timestamps: true } // ← createdAt, updatedAt auto mil jayega

@@ -55,10 +55,7 @@ router.get("/friends/:email", async (req, res) => {
   try {
     const user = await User.findOne({
       email: req.params.email,
-    }).populate({
-      path: "friends.user",
-      select: "firstName lastName email image"
-    });
+    }).populate("friends");
 
     if (!user) {
       return res.status(404).json({

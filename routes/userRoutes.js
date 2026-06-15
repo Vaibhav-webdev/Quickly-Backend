@@ -55,8 +55,11 @@ router.get("/friends/:email", async (req, res) => {
   try {
     const user = await User.findOne({
       email: req.params.email,
-    }).populate("friends.user")
-    .lean()
+    })
+    .populate({
+      path: "friends.user" // ← Yeh sabse important hai! 'friends' array ke andar 'user' ko populate karo
+    })
+    .lean();
 
     if (!user) {
       return res.status(404).json({

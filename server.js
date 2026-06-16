@@ -30,15 +30,21 @@ app.get('/', (req, res) => {
   res.send("<h2>Page Not Found!!</h2>")
 })
 app.use("/api", userRoutes);
-
 // socket connection
 io.on("connection", (socket) => {
 
+  socket.on("join_room", ({ roomId }) => {
+
+    socket.join(roomId)
+    socket.to(roomId).emit("isOnline", roomId)
+  });
+
   // receive message
   socket.on("message", (data) => {
-    // send to all users
-    socket.broadcast.emit("message", data);
-  });
+  const { roomId } = data;
+
+  socket.to(roomId).emit("message", data);
+});
 
   socket.on("typing", (data) => {
     socket.broadcast.emit("typing", data);
@@ -51,6 +57,11 @@ io.on("connection", (socket) => {
   socket.on("send_image", async (data) => {
     socket.broadcast.emit("send_image", data);
 
+  });
+  socket.on("leave_room", (data) => {
+    const { roomId } = data;
+    socket.leave(roomId); // 🔥 User room se bahaar nikal jayega
+    socket.to(roomId).emit("isOffline", roomId)
   });
 
   // disconnect

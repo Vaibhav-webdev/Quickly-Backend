@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 
 import http from "http";
 import { Server } from "socket.io";
+import { rootCertificates } from "tls";
 
 dotenv.config();
 
@@ -47,15 +48,15 @@ io.on("connection", (socket) => {
 });
 
   socket.on("typing", (data) => {
-    socket.broadcast.emit("typing", data);
+    socket.to(data.roomId).emit("typing", data);
   });
 
   socket.on("stopTyping", (data) => {
-    socket.broadcast.emit("stopTyping", data);
+    socket.to(data.roomId).emit("stopTyping", data);
   });
 
   socket.on("send_image", async (data) => {
-    socket.broadcast.emit("send_image", data);
+    socket.to(roomId).emit("send_image", data);
 
   });
   socket.on("leave_room", (data) => {

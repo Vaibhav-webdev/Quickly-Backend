@@ -35,34 +35,53 @@ app.use("/api", userRoutes);
 io.on("connection", (socket) => {
 
   socket.on("join_room", ({ roomId }) => {
+    socket.join(roomId);
 
-    socket.join(roomId)
-    socket.to(roomId).emit("isOnline", roomId)
+    // Room ke baaki members ko batao ki ye user online aa gaya
+    socket.to(roomId).emit("isOnline", roomId);
+
+    // 🆕 Agar room mein already koi dusra user maujood hai, to isi naye joiner ko bhi batao
+    const roomSockets = io.sockets.adapter.rooms.get(roomId);
+    if (roomSockets && roomSockets.size > 1) {
+      socket.emit("isOnline", roomId);
+    }
   });
 
   // receive message
   socket.on("message", (data) => {
-  const { roomId } = data;
+    const { roomId } = data;
+    socket.to(roomId).emit("message", data);
+  });
 
-  socket.to(roomId).emit("message", data);
-});
-
+  // 🔧 ab room-scoped (pehle sabko broadcast ho raha tha)
   socket.on("typing", (data) => {
-    socket.to(data.roomId).emit("typing", data);
+    const { roomId } = data;
+    socket.to(roomId).emit("typing", data);
   });
 
   socket.on("stopTyping", (data) => {
-    socket.to(data.roomId).emit("stopTyping", data);
+    const { roomId } = data;
+    socket.to(roomId).emit("stopTyping", data);
   });
 
   socket.on("send_image", async (data) => {
+    const { roomId } = data;
     socket.to(roomId).emit("send_image", data);
-
   });
+
   socket.on("leave_room", (data) => {
     const { roomId } = data;
-    socket.leave(roomId); // 🔥 User room se bahaar nikal jayega
-    socket.to(roomId).emit("isOffline", roomId)
+    socket.leave(roomId);
+    socket.to(roomId).emit("isOffline", roomId);
+  });
+
+  // 🆕 "disconnecting" — disconnect se thik pehle fire hota hai, jab socket.rooms abhi bhi populated hote hain
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((roomId) => {
+      if (roomId !== socket.id) {
+        socket.to(roomId).emit("isOffline", roomId);
+      }
+    });
   });
 
   // disconnect
@@ -72,7 +91,6 @@ io.on("connection", (socket) => {
 
 });
 
-// IMPORTANT
 server.listen(process.env.PORT, () => {
   console.log(`Server running on localhost:${process.env.PORT}`);
 });
